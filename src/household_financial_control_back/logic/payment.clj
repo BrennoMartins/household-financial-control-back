@@ -13,6 +13,15 @@
   [amount installments]
   (double (/ amount installments)))
 
+(defn- earliest-reference-date [grouped-payments]
+  (reduce (fn [earliest payment]
+            (let [current-date (:reference-date payment)]
+              (if (neg? (compare current-date earliest))
+                current-date
+                earliest)))
+          (:reference-date (first grouped-payments))
+          (rest grouped-payments)))
+
 (s/defn generate-instalment-payment :- model.payment/payment-list-schema
   [payment-data :- model.payment/payment-schema]
   (let [is-installments? (:is-installments payment-data)
@@ -36,7 +45,7 @@
   (->> payments
        (group-by :category-id)
        (mapv (fn [[category-id grouped-payments]]
-               (let [reference-date (apply min (map :reference-date grouped-payments))
+               (let [reference-date (earliest-reference-date grouped-payments)
                      total-amount (reduce + (map :amount grouped-payments))]
                  {:reference-date reference-date
                   :is-installments false
