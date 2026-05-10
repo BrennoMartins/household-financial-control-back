@@ -9,5 +9,6 @@
 
 (s/defn return-all-payments :- model.payment/payment-list-schema
   [db]
+        (let )
   (diplomatic.db.payment/return-all-payments db))
 
