@@ -2,16 +2,19 @@
   (:require [schema.core :as s]
             [household-financial-control-back.wire.in.create-new-payment :as wire.in.create-new-payment]
             [household-financial-control-back.wire.out.return-all-payments :as wire.out.return-all-payments]
-            [household-financial-control-back.model.payment :as model.payment]))
+            [household-financial-control-back.wire.out.return-monthly-reference-payments :as wire.out.return-monthly-reference-payments]
+            [household-financial-control-back.model.payment :as model.payment])
+  (:import (java.sql Date)
+           (java.time LocalDate ZoneId)))
 
 (defn- ->local-date [value]
   (cond
-    (instance? java.time.LocalDate value) value
-    (instance? java.sql.Date value) (.toLocalDate ^java.sql.Date value)
+    (instance? LocalDate value) value
+    (instance? Date value) (.toLocalDate ^Date value)
     (instance? java.util.Date value) (-> (.toInstant ^java.util.Date value)
-                                         (.atZone (java.time.ZoneId/systemDefault))
+                                         (.atZone (ZoneId/systemDefault))
                                          (.toLocalDate))
-    (string? value) (java.time.LocalDate/parse value)
+    (string? value) (LocalDate/parse value)
     :else value))
 
 (defn- ->payment-method-keyword [value]
@@ -28,10 +31,10 @@
 
 (defn- ->wire-date [value]
   (cond
-    (instance? java.time.LocalDate value) (.toString ^java.time.LocalDate value)
-    (instance? java.sql.Date value) (.toString ^java.sql.Date value)
+    (instance? LocalDate value) (.toString ^LocalDate value)
+    (instance? Date value) (.toString ^Date value)
     (instance? java.util.Date value) (-> (.toInstant ^java.util.Date value)
-                                         (.atZone (java.time.ZoneId/systemDefault))
+                                         (.atZone (ZoneId/systemDefault))
                                          (.toLocalDate)
                                          (.toString))
     :else value))
@@ -75,6 +78,21 @@
   [payments :- model.payment/payment-list-schema]
   {:payments (mapv (fn [payment]
                      (internal-payment->wire-payment payment))
+                   payments)})
+
+(s/defn internal-monthly-payment->wire-payment :- wire.out.return-monthly-reference-payments/monthly-reference-payment-out-schema
+  [payment :- model.payment/monthly-payment-schema]
+  {:reference-date (->wire-date (:reference-date payment))
+   :is-installments (:is-installments payment)
+   :number-installments (:number-installments payment)
+   :category-id (:category-id payment)
+   :is-fixed-expense (:is-fixed-expense payment)
+   :amount (:amount payment)})
+
+(s/defn internal-monthly-payments->wire-return-monthly-reference-payments :- wire.out.return-monthly-reference-payments/return-monthly-reference-payments-schema
+  [payments :- [model.payment/monthly-payment-schema]]
+  {:payments (mapv (fn [payment]
+                     (internal-monthly-payment->wire-payment payment))
                    payments)})
 
 

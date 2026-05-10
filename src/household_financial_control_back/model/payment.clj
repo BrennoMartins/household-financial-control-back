@@ -24,3 +24,11 @@
 (def payment-list-schema
   [payment-schema])
 
+(def monthly-payment-schema
+  {:reference-date local-date
+   :is-installments s/Bool
+   :number-installments s/Int
+   :category-id s/Int
+   :is-fixed-expense s/Bool
+   :amount s/Num})
+
