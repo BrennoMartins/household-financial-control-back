@@ -17,9 +17,14 @@
                    valid? (s/check wire.in.create-new-card/create-new-card-schema body)]
                (if valid?
                  {:status 400 :body {:erro "Invalid data" :detalhes valid?}}
-                 (do
-                   (controller.card/create-new-card diplomatic.db.household-financial-db/db (adapter.card/wire-create-new-card->internal-card body))
-                   {:status 201 :body {:mensagem "Card created successfully"}}))))
+                 (let [created-card (controller.card/create-new-card diplomatic.db.household-financial-db/db (adapter.card/wire-create-new-card->internal-card body))]
+                   {:status 201 :body {:mensagem "Card created successfully"
+                                       :card created-card}}))))
+
+           (GET "/card" []
+                 (let [cards (controller.card/return-all-cards diplomatic.db.household-financial-db/db)]
+                     {:status 200
+                      :body   {:cards cards}}))
 
            (route/not-found {:status 404 :body "Route not found"}))
 
