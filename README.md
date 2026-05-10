@@ -63,7 +63,7 @@ HTTP Response (wire.out.*)
 
 ## Estrutura de Pastas
 
-```
+``` 
 src/
 └── household_financial_control_back/
     ├── core.clj                    # Entrypoint da aplicação
@@ -74,7 +74,9 @@ src/
     │   │   ├── create_new_category.clj
     │   │   └── create_new_owner.clj
     │   └── out/                    # Schemas de saída (payload da resposta)
-    │       └── return_all_cards.clj
+    │       ├── return_all_cards.clj
+    │       ├── return_all_categories.clj
+    │       └── return_all_owners.clj
     │
     ├── model/                      # Modelos internos da aplicação
     │   ├── card.clj
@@ -181,6 +183,20 @@ O relatório de cobertura HTML é gerado em `target/coverage/index.html`.
 | `POST` | `/card` | Cadastra um novo cartão |
 | `GET` | `/card` | Retorna todos os cartões |
 
+### Categories
+
+| Metodo | Rota | Descricao |
+|---|---|---|
+| `POST` | `/category` | Cadastra uma nova categoria |
+| `GET` | `/category` | Retorna todas as categorias |
+
+### Owners
+
+| Metodo | Rota | Descricao |
+|---|---|---|
+| `POST` | `/owner` | Cadastra um novo owner |
+| `GET` | `/owner` | Retorna todos os owners |
+
 #### POST `/card`
 ```json
 // Request body
@@ -200,6 +216,52 @@ O relatório de cobertura HTML é gerado em `target/coverage/index.html`.
   "cards": [
     { "id": 1, "name": "Nubank" },
     { "id": 2, "name": "Itau" }
+  ]
+}
+```
+
+#### POST `/category`
+```json
+// Request body
+{ "name": "Alimentacao" }
+
+// Response 201
+{
+  "mensagem": "Category created successfully",
+  "category": { "id": 1, "name": "Alimentacao" }
+}
+```
+
+#### GET `/category`
+```json
+// Response 200
+{
+  "categories": [
+    { "id": 1, "name": "Alimentacao" },
+    { "id": 2, "name": "Transporte" }
+  ]
+}
+```
+
+#### POST `/owner`
+```json
+// Request body
+{ "name": "Joao" }
+
+// Response 201
+{
+  "mensagem": "Owner created successfully",
+  "owner": { "id": 1, "name": "Joao" }
+}
+```
+
+#### GET `/owner`
+```json
+// Response 200
+{
+  "owners": [
+    { "id": 1, "name": "Joao" },
+    { "id": 2, "name": "Maria" }
   ]
 }
 ```

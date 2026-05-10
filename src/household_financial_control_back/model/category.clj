@@ -5,3 +5,5 @@
   {(s/optional-key :id) s/Int
    :name s/Str})
 
+(def category-list-schema
+  [category-schema])
