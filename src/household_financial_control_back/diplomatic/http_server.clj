@@ -22,9 +22,10 @@
                                        :card created-card}}))))
 
            (GET "/card" []
-                 (let [cards (controller.card/return-all-cards diplomatic.db.household-financial-db/db)]
-                     {:status 200
-                      :body   {:cards cards}}))
+                 (let [cards    (controller.card/return-all-cards diplomatic.db.household-financial-db/db)
+                       response (adapter.card/internal-cards->wire-return-all-cards cards)]
+                   {:status 200
+                    :body   response}))
 
            (route/not-found {:status 404 :body "Route not found"}))
 
