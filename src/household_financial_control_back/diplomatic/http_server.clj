@@ -5,9 +5,15 @@
             [ring.middleware.defaults :refer [api-defaults wrap-defaults]]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [household-financial-control-back.wire.in.create-new-card :as wire.in.create-new-card]
+            [household-financial-control-back.wire.in.create-new-category :as wire.in.create-new-category]
+            [household-financial-control-back.wire.in.create-new-owner :as wire.in.create-new-owner]
             [household-financial-control-back.diplomatic.db.household-financial-db :as diplomatic.db.household-financial-db]
             [household-financial-control-back.controller.card :as controller.card]
+            [household-financial-control-back.controller.category :as controller.category]
+            [household-financial-control-back.controller.owner :as controller.owner]
             [household-financial-control-back.adapter.card :as adapter.card]
+            [household-financial-control-back.adapter.category :as adapter.category]
+            [household-financial-control-back.adapter.owner :as adapter.owner]
             [ring.middleware.cors :refer [wrap-cors]]
             [schema.core :as s]))
 
@@ -22,9 +28,42 @@
                                        :card created-card}}))))
 
            (GET "/card" []
-                 (let [cards (controller.card/return-all-cards diplomatic.db.household-financial-db/db)]
-                     {:status 200
-                      :body   {:cards cards}}))
+                 (let [cards    (controller.card/return-all-cards diplomatic.db.household-financial-db/db)
+                       response (adapter.card/internal-cards->wire-return-all-cards cards)]
+                   {:status 200
+                    :body   response}))
+
+           (POST "/category" req
+             (let [body   (:body req)
+                   valid? (s/check wire.in.create-new-category/create-new-category-schema body)]
+               (if valid?
+                 {:status 400 :body {:erro "Invalid data" :detalhes valid?}}
+                 (let [created-category (controller.category/create-new-category
+                                          diplomatic.db.household-financial-db/db
+                                          (adapter.category/wire-create-new-category->internal-category body))]
+                   {:status 201 :body {:mensagem "Category created successfully"
+                                       :category created-category}}))))
+
+           (GET "/category" []
+             (let [categories (controller.category/return-all-categories diplomatic.db.household-financial-db/db)
+                   response   (adapter.category/internal-categories->wire-return-all-categories categories)]
+               {:status 200 :body response}))
+
+           (POST "/owner" req
+             (let [body   (:body req)
+                   valid? (s/check wire.in.create-new-owner/create-new-owner-schema body)]
+               (if valid?
+                 {:status 400 :body {:erro "Invalid data" :detalhes valid?}}
+                 (let [created-owner (controller.owner/create-new-owner
+                                       diplomatic.db.household-financial-db/db
+                                       (adapter.owner/wire-create-new-owner->internal-owner body))]
+                   {:status 201 :body {:mensagem "Owner created successfully"
+                                       :owner created-owner}}))))
+
+           (GET "/owner" []
+             (let [owners   (controller.owner/return-all-owners diplomatic.db.household-financial-db/db)
+                   response (adapter.owner/internal-owners->wire-return-all-owners owners)]
+               {:status 200 :body response}))
 
            (route/not-found {:status 404 :body "Route not found"}))
 

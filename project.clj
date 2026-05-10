@@ -17,6 +17,7 @@
                  [metosin/malli "0.14.0"]
                  [org.postgresql/postgresql "42.7.3"]
                  [ring-cors "0.1.13"]]
+  :plugins [[lein-cloverage "1.2.4"]]
   :main ^:skip-aot household-financial-control-back.diplomatic.http-server
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all

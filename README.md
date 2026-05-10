@@ -1,44 +1,275 @@
 # household-financial-control-back
 
-FIXME: description
+Backend do sistema de controle financeiro doméstico, desenvolvido em **Clojure** com arquitetura em camadas bem definidas para separação de responsabilidades.
 
-## Installation
+---
 
-Download from http://example.com/FIXME.
+## Tecnologias
 
-## Usage
+| Biblioteca | Propósito |
+|---|---|
+| [Compojure](https://github.com/weavejester/compojure) | Roteamento HTTP |
+| [Ring](https://github.com/ring-clojure/ring) | Servidor HTTP (Jetty) e middlewares |
+| [next.jdbc](https://github.com/seancorfield/next-jdbc) | Acesso ao banco de dados |
+| [HoneySQL](https://github.com/seancorfield/honeysql) | Construção de queries SQL em Clojure |
+| [Prismatic Schema](https://github.com/plumatic/schema) | Validação e tipagem de dados |
+| [PostgreSQL](https://www.postgresql.org/) | Banco de dados relacional |
+| [lein-cloverage](https://github.com/cloverage/cloverage) | Cobertura de testes |
 
-FIXME: explanation
+---
 
-    $ java -jar household-financial-control-back-0.1.0-standalone.jar [args]
+## Arquitetura
 
-## Options
+O projeto segue uma arquitetura em camadas com fluxo unidirecional de dados:
 
-FIXME: listing of options this app accepts.
+```
+HTTP Request
+     │
+     ▼
+┌─────────────────┐
+│   diplomatic/   │  ← Entrada HTTP (rotas, middlewares)
+│   http_server   │
+└────────┬────────┘
+         │ valida payload com wire.in.*
+         ▼
+┌─────────────────┐
+│    adapter/     │  ← Conversão entre wire e modelo interno
+└────────┬────────┘
+         │ modelo interno (model/*)
+         ▼
+┌─────────────────┐
+│   controller/   │  ← Orquestração da regra de negócio
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  diplomatic/    │  ← Acesso ao banco de dados (SQL via HoneySQL)
+│    db/          │
+└────────┬────────┘
+         │
+         ▼
+    PostgreSQL
+         │
+         ▼
+┌─────────────────┐
+│    adapter/     │  ← Conversão do modelo interno para wire.out.*
+└────────┬────────┘
+         │
+         ▼
+HTTP Response (wire.out.*)
+```
 
-## Examples
+---
 
-...
+## Estrutura de Pastas
 
-### Bugs
+``` 
+src/
+└── household_financial_control_back/
+    ├── core.clj                    # Entrypoint da aplicação
+    │
+    ├── wire/
+    │   ├── in/                     # Schemas de entrada (payload da requisição)
+    │   │   ├── create_new_card.clj
+    │   │   ├── create_new_category.clj
+    │   │   └── create_new_owner.clj
+    │   └── out/                    # Schemas de saída (payload da resposta)
+    │       ├── return_all_cards.clj
+    │       ├── return_all_categories.clj
+    │       └── return_all_owners.clj
+    │
+    ├── model/                      # Modelos internos da aplicação
+    │   ├── card.clj
+    │   ├── category.clj
+    │   ├── owner.clj
+    │   └── payment.clj
+    │
+    ├── adapter/                    # Conversão entre wire ↔ modelo interno
+    │   ├── card.clj
+    │   ├── category.clj
+    │   └── owner.clj
+    │
+    ├── controller/                 # Orquestração das regras de negócio
+    │   ├── card.clj
+    │   ├── category.clj
+    │   └── owner.clj
+    │
+    ├── logic/                      # Lógica de negócio pura (sem efeitos colaterais)
+    │
+    └── diplomatic/
+        ├── http_server.clj         # Rotas HTTP e middlewares
+        └── db/
+            ├── household_financial_db.clj  # Configuração da conexão
+            ├── card.clj            # Queries SQL de cards
+            ├── category.clj        # Queries SQL de categories
+            └── owner.clj           # Queries SQL de owners
+```
 
-...
+---
 
-### Any Other Sections
-### That You Think
-### Might be Useful
+## Responsabilidades por Camada
 
-## License
+### `wire/in`
+Define os **schemas de entrada** que validam o payload recebido pela API antes de qualquer processamento.
 
-Copyright © 2026 FIXME
+### `wire/out`
+Define os **schemas de saída** que padronizam o formato da resposta HTTP enviada ao cliente.
 
-This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
+### `model`
+Representa os **modelos internos** da aplicação — estruturas de dados que trafegam entre controller, adapter e db.
 
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+### `adapter`
+Responsável pelas **conversões de dados**:
+- `wire.in → model` (entrada): transforma o payload externo no modelo interno
+- `model → wire.out` (saída): transforma o modelo interno na resposta padronizada
+
+### `controller`
+**Orquestra** o fluxo de cada caso de uso: recebe o modelo interno, chama a camada de banco e retorna o resultado. Não contém lógica SQL nem conversão de formato.
+
+### `logic`
+Funções de **lógica de negócio pura**, sem efeitos colaterais (sem I/O, sem banco). Facilita testes unitários isolados.
+
+### `diplomatic/http_server`
+Define as **rotas HTTP** com Compojure, aplica middlewares (CORS, JSON, validação de schema) e coordena as chamadas entre adapter e controller.
+
+### `diplomatic/db`
+Contém as **queries SQL** construídas com HoneySQL e executadas via next.jdbc. Cada entidade tem seu próprio arquivo de acesso ao banco.
+
+---
+
+## Banco de Dados
+
+O schema do banco está em `resources/script_db.sql`. Para inicializar:
+
+```bash
+psql -h localhost -p 5432 -U usuario -d household-financial \
+  -f resources/script_db.sql
+```
+
+A configuração de conexão está em `src/.../diplomatic/db/household_financial_db.clj`.
+
+---
+
+## Rodando o projeto
+
+```bash
+lein run
+```
+
+A API sobe na porta **3000**.
+
+---
+
+## Testes
+
+```bash
+# Rodar todos os testes
+lein test
+
+# Verificar cobertura de testes
+lein cloverage
+```
+
+O relatório de cobertura HTML é gerado em `target/coverage/index.html`.
+
+---
+
+## Endpoints disponíveis
+
+### Cards
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/card` | Cadastra um novo cartão |
+| `GET` | `/card` | Retorna todos os cartões |
+
+### Categories
+
+| Metodo | Rota | Descricao |
+|---|---|---|
+| `POST` | `/category` | Cadastra uma nova categoria |
+| `GET` | `/category` | Retorna todas as categorias |
+
+### Owners
+
+| Metodo | Rota | Descricao |
+|---|---|---|
+| `POST` | `/owner` | Cadastra um novo owner |
+| `GET` | `/owner` | Retorna todos os owners |
+
+#### POST `/card`
+```json
+// Request body
+{ "name": "Nubank" }
+
+// Response 201
+{
+  "mensagem": "Card created successfully",
+  "card": { "id": 1, "name": "Nubank" }
+}
+```
+
+#### GET `/card`
+```json
+// Response 200
+{
+  "cards": [
+    { "id": 1, "name": "Nubank" },
+    { "id": 2, "name": "Itau" }
+  ]
+}
+```
+
+#### POST `/category`
+```json
+// Request body
+{ "name": "Alimentacao" }
+
+// Response 201
+{
+  "mensagem": "Category created successfully",
+  "category": { "id": 1, "name": "Alimentacao" }
+}
+```
+
+#### GET `/category`
+```json
+// Response 200
+{
+  "categories": [
+    { "id": 1, "name": "Alimentacao" },
+    { "id": 2, "name": "Transporte" }
+  ]
+}
+```
+
+#### POST `/owner`
+```json
+// Request body
+{ "name": "Joao" }
+
+// Response 201
+{
+  "mensagem": "Owner created successfully",
+  "owner": { "id": 1, "name": "Joao" }
+}
+```
+
+#### GET `/owner`
+```json
+// Response 200
+{
+  "owners": [
+    { "id": 1, "name": "Joao" },
+    { "id": 2, "name": "Maria" }
+  ]
+}
+```
+
+---
+
+## Licença
+
+Copyright © 2026
+
+Distribuído sob a [Eclipse Public License 2.0](http://www.eclipse.org/legal/epl-2.0).

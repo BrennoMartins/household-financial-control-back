@@ -5,3 +5,5 @@
   {(s/optional-key :id) s/Int
    :name s/Str})
 
+(def owner-list-schema
+  [owner-schema])
