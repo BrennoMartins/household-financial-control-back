@@ -72,11 +72,13 @@ src/
     │   ├── in/                     # Schemas de entrada (payload da requisição)
     │   │   ├── create_new_card.clj
     │   │   ├── create_new_category.clj
-    │   │   └── create_new_owner.clj
+    │   │   ├── create_new_owner.clj
+    │   │   └── create_new_payment.clj
     │   └── out/                    # Schemas de saída (payload da resposta)
     │       ├── return_all_cards.clj
     │       ├── return_all_categories.clj
-    │       └── return_all_owners.clj
+    │       ├── return_all_owners.clj
+    │       └── return_all_payments.clj
     │
     ├── model/                      # Modelos internos da aplicação
     │   ├── card.clj
@@ -87,12 +89,14 @@ src/
     ├── adapter/                    # Conversão entre wire ↔ modelo interno
     │   ├── card.clj
     │   ├── category.clj
-    │   └── owner.clj
+    │   ├── owner.clj
+    │   └── payment.clj
     │
     ├── controller/                 # Orquestração das regras de negócio
     │   ├── card.clj
     │   ├── category.clj
-    │   └── owner.clj
+    │   ├── owner.clj
+    │   └── payment.clj
     │
     ├── logic/                      # Lógica de negócio pura (sem efeitos colaterais)
     │
@@ -102,7 +106,8 @@ src/
             ├── household_financial_db.clj  # Configuração da conexão
             ├── card.clj            # Queries SQL de cards
             ├── category.clj        # Queries SQL de categories
-            └── owner.clj           # Queries SQL de owners
+            ├── owner.clj           # Queries SQL de owners
+            └── payment.clj         # Queries SQL de payments
 ```
 
 ---
@@ -197,6 +202,13 @@ O relatório de cobertura HTML é gerado em `target/coverage/index.html`.
 | `POST` | `/owner` | Cadastra um novo owner |
 | `GET` | `/owner` | Retorna todos os owners |
 
+### Payments
+
+| Metodo | Rota | Descricao |
+|---|---|---|
+| `POST` | `/payment` | Cadastra um novo pagamento |
+| `GET` | `/payment` | Retorna todos os pagamentos |
+
 #### POST `/card`
 ```json
 // Request body
@@ -262,6 +274,66 @@ O relatório de cobertura HTML é gerado em `target/coverage/index.html`.
   "owners": [
     { "id": 1, "name": "Joao" },
     { "id": 2, "name": "Maria" }
+  ]
+}
+```
+
+#### POST `/payment`
+```json
+// Request body
+{
+  "payment-date": "2026-05-10",
+  "reference-date": "2026-05-01",
+  "payment-method": "credit-card",
+  "card-id": 1,
+  "is-installments": true,
+  "number-installments": 3,
+  "description": "Compra do mês",
+  "category-id": 1,
+  "is-fixed-expense": false,
+  "amount": 199.9,
+  "owner-id": 1
+}
+
+// Response 201
+{
+  "mensagem": "Payment created successfully",
+  "payment": {
+    "id": 1,
+    "payment-date": "2026-05-10",
+    "reference-date": "2026-05-01",
+    "payment-method": "credit-card",
+    "card-id": 1,
+    "is-installments": true,
+    "number-installments": 3,
+    "description": "Compra do mês",
+    "category-id": 1,
+    "is-fixed-expense": false,
+    "amount": 199.9,
+    "owner-id": 1
+  }
+}
+```
+
+#### GET `/payment`
+```json
+// Response 200
+{
+  "payments": [
+    {
+      "id": 1,
+      "payment-date": "2026-05-10",
+      "reference-date": "2026-05-01",
+      "payment-method": "credit-card",
+      "card-id": 1,
+      "is-installments": true,
+      "number-installments": 3,
+      "description": "Compra do mês",
+      "category-id": 1,
+      "is-fixed-expense": false,
+      "amount": 199.9,
+      "owner-id": 1
+    }
   ]
 }
 ```

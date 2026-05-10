@@ -7,13 +7,16 @@
             [household-financial-control-back.wire.in.create-new-card :as wire.in.create-new-card]
             [household-financial-control-back.wire.in.create-new-category :as wire.in.create-new-category]
             [household-financial-control-back.wire.in.create-new-owner :as wire.in.create-new-owner]
+            [household-financial-control-back.wire.in.create-new-payment :as wire.in.create-new-payment]
             [household-financial-control-back.diplomatic.db.household-financial-db :as diplomatic.db.household-financial-db]
             [household-financial-control-back.controller.card :as controller.card]
             [household-financial-control-back.controller.category :as controller.category]
             [household-financial-control-back.controller.owner :as controller.owner]
+            [household-financial-control-back.controller.payment :as controller.payment]
             [household-financial-control-back.adapter.card :as adapter.card]
             [household-financial-control-back.adapter.category :as adapter.category]
             [household-financial-control-back.adapter.owner :as adapter.owner]
+            [household-financial-control-back.adapter.payment :as adapter.payment]
             [ring.middleware.cors :refer [wrap-cors]]
             [schema.core :as s]))
 
@@ -63,6 +66,22 @@
            (GET "/owner" []
              (let [owners   (controller.owner/return-all-owners diplomatic.db.household-financial-db/db)
                    response (adapter.owner/internal-owners->wire-return-all-owners owners)]
+               {:status 200 :body response}))
+
+           (POST "/payment" req
+             (let [body   (:body req)
+                   valid? (s/check wire.in.create-new-payment/create-new-payment-schema body)]
+               (if valid?
+                 {:status 400 :body {:erro "Invalid data" :detalhes valid?}}
+                 (let [created-payment (controller.payment/create-new-payment
+                                         diplomatic.db.household-financial-db/db
+                                         (adapter.payment/wire-create-new-payment->internal-payment body))]
+                   {:status 201 :body {:mensagem "Payment created successfully"
+                                       :payment (adapter.payment/internal-payment->wire-payment created-payment)}}))))
+
+           (GET "/payment" []
+             (let [payments (controller.payment/return-all-payments diplomatic.db.household-financial-db/db)
+                   response (adapter.payment/internal-payments->wire-return-all-payments payments)]
                {:status 200 :body response}))
 
            (route/not-found {:status 404 :body "Route not found"}))
