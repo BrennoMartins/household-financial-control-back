@@ -5,3 +5,6 @@
   {(s/optional-key :id) s/Int
    :name s/Str})
 
+(def card-list-schema
+  [card-schema])
+

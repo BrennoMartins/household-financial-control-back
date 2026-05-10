@@ -11,6 +11,8 @@
                  [ring/ring-jetty-adapter "1.10.0"]
                  [prismatic/schema "1.1.12"]
                  [org.clojure/java.jdbc "0.7.12"]
+                 [com.github.seancorfield/next.jdbc "1.3.939"]
+                 [com.github.seancorfield/honeysql "2.6.1203"]
                  [clj-http "3.12.3"]
                  [metosin/malli "0.14.0"]
                  [org.postgresql/postgresql "42.7.3"]
