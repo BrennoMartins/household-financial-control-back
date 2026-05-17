@@ -1,7 +1,8 @@
 (ns household-financial-control-back.controller.payment-test
   (:require [clojure.test :refer :all]
             [household-financial-control-back.controller.payment :as controller.payment]
-            [household-financial-control-back.diplomatic.db.payment :as diplomatic.db.payment]))
+            [household-financial-control-back.diplomatic.db.payment :as diplomatic.db.payment]
+            [household-financial-control-back.logic.payment :as logic.payment]))
 
 (def payment-data
   {:payment-date (java.time.LocalDate/parse "2026-05-10")
@@ -10,6 +11,7 @@
    :card-id 1
    :is-installments true
    :number-installments 3
+   :quantity-installments 1
    :description "Compra do mês"
    :category-id 1
    :is-fixed-expense false
@@ -18,11 +20,13 @@
 
 (deftest create-new-payment-delegates-to-db-layer
   (let [db-spec  {:dbtype "postgresql" :dbname "household-financial"}
-        expected payment-data
+        installments [payment-data]
+        expected installments
         captured (atom nil)]
-    (with-redefs [diplomatic.db.payment/create-new-payment (fn [db payload]
+    (with-redefs [logic.payment/generate-instalment-payment (fn [_] installments)
+                  diplomatic.db.payment/create-new-payment (fn [db payload]
                                                              (reset! captured {:db db :payload payload})
-                                                             expected)]
+                                                             payload)]
       (is (= expected
              (controller.payment/create-new-payment db-spec payment-data)))
       (is (= {:db db-spec :payload payment-data}
@@ -38,4 +42,30 @@
       (is (= expected
              (controller.payment/return-all-payments db-spec)))
       (is (= db-spec @captured)))))
+
+(deftest return-monthly-payments-by-year-month-aggregates-payments
+  (let [db-spec {:dbtype "postgresql" :dbname "household-financial"}
+        year 2026
+        month 5
+        db-payments [payment-data]
+        expected [{:reference-date (java.time.LocalDate/parse "2026-05-01")
+                   :is-installments false
+                   :number-installments 1
+                   :category-id 1
+                   :is-fixed-expense false
+                   :amount 199.90M}]
+        captured-db (atom nil)
+        captured-logic (atom nil)]
+    (with-redefs [diplomatic.db.payment/return-payments-by-year-month (fn [db y m]
+                                                                        (reset! captured-db {:db db :year y :month m})
+                                                                        db-payments)
+                  logic.payment/return-payments-by-category (fn [payments]
+                                                             (reset! captured-logic payments)
+                                                             expected)]
+      (is (= expected
+             (controller.payment/return-monthly-payments-by-year-month db-spec year month)))
+      (is (= {:db db-spec :year year :month month}
+             @captured-db))
+      (is (= db-payments
+             @captured-logic)))))
 

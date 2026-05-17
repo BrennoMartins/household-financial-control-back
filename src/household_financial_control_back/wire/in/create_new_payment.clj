@@ -17,6 +17,7 @@
    :is-installments s/Bool
    :number-installments s/Int
    (s/optional-key :description) (s/maybe s/Str)
+   (s/optional-key :quantity-installments) (s/maybe s/Int)
    :category-id s/Int
    :is-fixed-expense s/Bool
    :amount s/Num

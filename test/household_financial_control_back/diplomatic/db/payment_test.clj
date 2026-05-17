@@ -4,15 +4,17 @@
             [honey.sql.helpers :as h]
             [household-financial-control-back.diplomatic.db.payment :as diplomatic.db.payment]
             [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as rs]))
+            [next.jdbc.result-set :as rs])
+  (:import (java.time LocalDate)))
 
 (def payment-data
-  {:payment-date (java.time.LocalDate/parse "2026-05-10")
-   :reference-date (java.time.LocalDate/parse "2026-05-01")
+  {:payment-date (LocalDate/parse "2026-05-10")
+   :reference-date (LocalDate/parse "2026-05-01")
    :payment-method :credit-card
    :card-id 1
    :is-installments true
    :number-installments 3
+   :quantity-installments 1
    :description "Compra do mes"
    :category-id 1
    :is-fixed-expense false
@@ -26,7 +28,7 @@
   (let [db-spec {:dbtype "postgresql" :dbname "household-financial"}
         expected-sql (-> (h/insert-into :payments)
                          (h/columns :payment_date :reference_date :payment_method :card_id :is_installments
-                                    :number_installments :description :category_id :is_fixed_expense :amount :owner_id)
+                                     :number_installments :description :category_id :is_fixed_expense :amount :owner_id :quantity_installments)
                          (h/values [[(:payment-date payment-data)
                                      (:reference-date payment-data)
                                      (name (:payment-method payment-data))
@@ -37,9 +39,10 @@
                                      (:category-id payment-data)
                                      (:is-fixed-expense payment-data)
                                      (:amount payment-data)
-                                     (:owner-id payment-data)]])
+                                     (:owner-id payment-data)
+                                     (:quantity-installments payment-data)]])
                          (h/returning :id :payment_date :reference_date :payment_method :card_id :is_installments
-                                      :number_installments :description :category_id :is_fixed_expense :amount :owner_id)
+                                       :number_installments :description :category_id :is_fixed_expense :amount :owner_id :quantity_installments)
                          (sql/format))
         captured (atom nil)]
     (with-redefs [jdbc/get-datasource (fn [db]
@@ -58,7 +61,7 @@
 (deftest return-all-payments-queries-and-returns-payments
   (let [db-spec {:dbtype "postgresql" :dbname "household-financial"}
         expected-sql (-> (h/select :id :payment_date :reference_date :payment_method :card_id :is_installments
-                                   :number_installments :description :category_id :is_fixed_expense :amount :owner_id)
+                                   :number_installments :description :category_id :is_fixed_expense :amount :owner_id :quantity_installments)
                          (h/from :payments)
                          (h/order-by [:id :asc])
                          (sql/format))
@@ -70,6 +73,7 @@
                                (assoc :payment-method :debit-card)
                                (assoc :is-installments false)
                                (assoc :number-installments 1)
+                               (assoc :quantity-installments nil)
                                (assoc :description nil)
                                (assoc :amount 75.00M)
                                (assoc :card-id 2)
@@ -84,6 +88,34 @@
                                   expected-payments)]
       (is (= expected-payments
              (diplomatic.db.payment/return-all-payments db-spec)))
+      (is (= {:ds :mock-datasource
+              :sql expected-sql
+              :opts {:builder-fn rs/as-maps}}
+             @captured)))))
+
+(deftest return-payments-by-year-month-queries-and-returns-payments
+  (let [db-spec {:dbtype "postgresql" :dbname "household-financial"}
+        year 2026
+        month 5
+        start-date (LocalDate/of year month 1)
+        end-date (.plusMonths start-date 1)
+        expected-sql (-> (h/select :id :payment_date :reference_date :payment_method :card_id :is_installments
+                                   :number_installments :description :category_id :is_fixed_expense :amount :owner_id :quantity_installments)
+                         (h/from :payments)
+                         (h/where [:and [:>= :reference_date start-date]
+                                   [:< :reference_date end-date]])
+                         (h/order-by [:id :asc])
+                         (sql/format))
+        expected-payments [payment-data-db-return]
+        captured (atom nil)]
+    (with-redefs [jdbc/get-datasource (fn [db]
+                                        (is (= db-spec db))
+                                        :mock-datasource)
+                  jdbc/execute! (fn [ds sql-params opts]
+                                  (reset! captured {:ds ds :sql sql-params :opts opts})
+                                  expected-payments)]
+      (is (= expected-payments
+             (diplomatic.db.payment/return-payments-by-year-month db-spec year month)))
       (is (= {:ds :mock-datasource
               :sql expected-sql
               :opts {:builder-fn rs/as-maps}}

@@ -15,6 +15,7 @@
    :card-id s/Int
    :is-installments s/Bool
    :number-installments s/Int
+   (s/optional-key :quantity-installments) (s/maybe s/Int)
    (s/optional-key :description) (s/maybe s/Str)
    :category-id s/Int
    :is-fixed-expense s/Bool
@@ -23,4 +24,12 @@
 
 (def payment-list-schema
   [payment-schema])
+
+(def monthly-payment-schema
+  {:reference-date local-date
+   :is-installments s/Bool
+   :number-installments s/Int
+   :category-id s/Int
+   :is-fixed-expense s/Bool
+   :amount s/Num})
 

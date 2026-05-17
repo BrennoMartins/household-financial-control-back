@@ -20,6 +20,12 @@
             [ring.middleware.cors :refer [wrap-cors]]
             [schema.core :as s]))
 
+(defn- parse-int-safe [value]
+  (try
+    (Integer/parseInt (str value))
+    (catch Exception _
+      nil)))
+
 (defroutes app-routes
            (POST "/card" req
              (let [body (:body req)
@@ -83,6 +89,21 @@
              (let [payments (controller.payment/return-all-payments diplomatic.db.household-financial-db/db)
                    response (adapter.payment/internal-payments->wire-return-all-payments payments)]
                {:status 200 :body response}))
+
+           (GET "/payment/monthly-reference" [year month]
+             (let [year-int (parse-int-safe year)
+                   month-int (parse-int-safe month)]
+               (if (or (nil? year-int)
+                       (nil? month-int)
+                       (< month-int 1)
+                       (> month-int 12))
+                 {:status 400 :body {:erro "Invalid query params" :detalhes {:year year :month month}}}
+                 (let [payments (controller.payment/return-monthly-payments-by-year-month
+                                  diplomatic.db.household-financial-db/db
+                                  year-int
+                                  month-int)
+                       response (adapter.payment/internal-monthly-payments->wire-return-monthly-reference-payments payments)]
+                   {:status 200 :body response}))))
 
            (route/not-found {:status 404 :body "Route not found"}))
 
