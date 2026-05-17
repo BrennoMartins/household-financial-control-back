@@ -57,7 +57,8 @@
    :category-id (:category-id payload)
    :is-fixed-expense (:is-fixed-expense payload)
    :amount (:amount payload)
-   :owner-id (:owner-id payload)})
+   :owner-id (:owner-id payload)
+   :quantity-installments (:quantity-installments payload)})
 
 (s/defn internal-payment->wire-payment :- wire.out.return-all-payments/payment-out-schema
   [payment :- model.payment/payment-schema]

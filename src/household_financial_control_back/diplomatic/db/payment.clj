@@ -25,7 +25,7 @@
   (let [datasource (jdbc/get-datasource db)
         insert-sql (-> (h/insert-into :payments)
                        (h/columns :payment_date :reference_date :payment_method :card_id :is_installments
-                                  :number_installments :description :category_id :is_fixed_expense :amount :owner_id)
+                                  :number_installments :description :category_id :is_fixed_expense :amount :owner_id :quantity_installments)
                        (h/values [[(:payment-date payment-data)
                                    (:reference-date payment-data)
                                    (name (:payment-method payment-data))
@@ -36,9 +36,10 @@
                                    (:category-id payment-data)
                                    (:is-fixed-expense payment-data)
                                    (:amount payment-data)
-                                   (:owner-id payment-data)]])
+                                   (:owner-id payment-data)
+                                   (:quantity-installments payment-data)]])
                        (h/returning :id :payment_date :reference_date :payment_method :card_id :is_installments
-                                    :number_installments :description :category_id :is_fixed_expense :amount :owner_id)
+                                    :number_installments :description :category_id :is_fixed_expense :amount :owner_id :quantity_installments)
                        (sql/format))]
     (let [result (first (jdbc/execute! datasource insert-sql {:builder-fn rs/as-maps}))]
       (-> result
@@ -49,7 +50,7 @@
   [db]
   (let [datasource (jdbc/get-datasource db)
         query-sql (-> (h/select :id :payment_date :reference_date :payment_method :card_id :is_installments
-                               :number_installments :description :category_id :is_fixed_expense :amount :owner_id)
+                               :number_installments :description :category_id :is_fixed_expense :amount :owner_id :quantity_installments)
                       (h/from :payments)
                       (h/order-by [:id :asc])
                       (sql/format))]
@@ -62,7 +63,7 @@
         start-date (LocalDate/of (int year) (int month) 1)
         end-date (.plusMonths start-date 1)
         query-sql (-> (h/select :id :payment_date :reference_date :payment_method :card_id :is_installments
-                               :number_installments :description :category_id :is_fixed_expense :amount :owner_id)
+                               :number_installments :description :category_id :is_fixed_expense :amount :owner_id :quantity_installments)
                       (h/from :payments)
                       (h/where [:and [:>= :reference_date start-date]
                                 [:< :reference_date end-date]])

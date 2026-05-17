@@ -33,8 +33,8 @@
       (vec (map (fn [installment-index]
                   (-> payment-data
                       (assoc :amount installment-amount)
-                      (assoc :is-installments false)
-                      (assoc :number-installments 1)
+                      (assoc :is-installments true)
+                      (assoc :quantity-installments (inc installment-index))
                       (assoc :reference-date
                              (add-months-to-date reference-date installment-index))))
                 (range number-installments)))
