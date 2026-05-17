@@ -54,3 +54,6 @@
                   :is-fixed-expense (every? :is-fixed-expense grouped-payments)
                   :amount total-amount})))
        (sort-by :category-id)))
+
+
+;; TODO ajustar os testes unitarios e colocar no front end considertar o quantity-installments

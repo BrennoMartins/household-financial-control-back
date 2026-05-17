@@ -11,6 +11,7 @@
    :card-id 1
    :is-installments true
    :number-installments 3
+   :quantity-installments 1
    :description "Compra do mês"
    :category-id 1
    :is-fixed-expense false
