@@ -82,16 +82,14 @@
                    payments)})
 
 (s/defn internal-monthly-payment->wire-payment :- wire.out.return-monthly-reference-payments/monthly-reference-payment-out-schema
-  [payment :- model.payment/monthly-payment-schema]
-  {:reference-date (->wire-date (:reference-date payment))
-   :is-installments (:is-installments payment)
-   :number-installments (:number-installments payment)
-   :category-id (:category-id payment)
-   :is-fixed-expense (:is-fixed-expense payment)
+  [payment :- model.payment/monthly-reference-payment-schema]
+  {:category_name (:category-name payment)
+   :quantity_installments (:quantity-installments payment)
+   :number_installments (:number-installments payment)
    :amount (:amount payment)})
 
 (s/defn internal-monthly-payments->wire-return-monthly-reference-payments :- wire.out.return-monthly-reference-payments/return-monthly-reference-payments-schema
-  [payments :- [model.payment/monthly-payment-schema]]
+  [payments :- [model.payment/monthly-reference-payment-schema]]
   {:payments (mapv (fn [payment]
                      (internal-monthly-payment->wire-payment payment))
                    payments)})

@@ -39,7 +39,7 @@
     (is (= [payment-data]
            (logic.payment/generate-instalment-payment payment-data)))))
 
-(deftest return-payments-by-category-aggregates-and-picks-earliest-reference-date
+(deftest return-monthly-reference-payments-enriches-payments-with-category-name
   (let [payments [{:payment-date (java.time.LocalDate/parse "2026-06-05")
                    :reference-date (java.time.LocalDate/parse "2026-06-15")
                    :payment-method :credit-card
@@ -73,18 +73,20 @@
                    :is-fixed-expense true
                    :amount 75.00M
                    :owner-id 1}]
-        expected [{:reference-date (java.time.LocalDate/parse "2026-06-01")
-                   :is-installments false
+        categories [{:id 1 :name "Alimentação"}
+                    {:id 2 :name "Transporte"}]
+        expected [{:category-name "Alimentação"
+                   :quantity-installments nil
                    :number-installments 1
-                   :category-id 1
-                   :is-fixed-expense false
-                   :amount 150.00M}
-                  {:reference-date (java.time.LocalDate/parse "2026-06-02")
-                   :is-installments false
+                   :amount 100.00M}
+                  {:category-name "Alimentação"
+                   :quantity-installments nil
                    :number-installments 1
-                   :category-id 2
-                   :is-fixed-expense true
+                   :amount 50.00M}
+                  {:category-name "Transporte"
+                   :quantity-installments nil
+                   :number-installments 1
                    :amount 75.00M}]]
     (is (= expected
-           (logic.payment/return-payments-by-category payments)))))
+           (logic.payment/return-monthly-reference-payments payments categories)))))
 

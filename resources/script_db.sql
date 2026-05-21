@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS payments (
     card_id BIGINT NOT NULL,                    -- Card (FK)
     is_installments BOOLEAN NOT NULL DEFAULT FALSE, -- Is Installments
     number_installments INTEGER NOT NULL DEFAULT 1, -- Number Installments
+    quantity_installments INTEGER,              -- Current installment number
     description TEXT,                           -- Description
     category_id BIGINT NOT NULL,                -- Category (FK)
     is_fixed_expense BOOLEAN NOT NULL DEFAULT FALSE, -- Is Fixed Expense

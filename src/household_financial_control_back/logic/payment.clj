@@ -1,5 +1,6 @@
 (ns household-financial-control-back.logic.payment
     (:require [schema.core :as s]
+              [household-financial-control-back.model.category :as model.category]
               [household-financial-control-back.model.payment :as model.payment])
     (:import [java.time LocalDate]))
 
@@ -13,14 +14,12 @@
   [amount installments]
   (double (/ amount installments)))
 
-(defn- earliest-reference-date [grouped-payments]
-  (reduce (fn [earliest payment]
-            (let [current-date (:reference-date payment)]
-              (if (neg? (compare current-date earliest))
-                current-date
-                earliest)))
-          (:reference-date (first grouped-payments))
-          (rest grouped-payments)))
+(defn- categories-by-id
+  [categories]
+  (into {}
+        (map (fn [category]
+               [(:id category) (:name category)]))
+        categories))
 
 (s/defn generate-instalment-payment :- model.payment/payment-list-schema
   [payment-data :- model.payment/payment-schema]
@@ -40,17 +39,13 @@
                 (range number-installments)))
       [payment-data])))
 
-(s/defn return-payments-by-category :- [model.payment/monthly-payment-schema]
-  [payments :- model.payment/payment-list-schema]
-  (->> payments
-       (group-by :category-id)
-       (mapv (fn [[category-id grouped-payments]]
-               (let [reference-date (earliest-reference-date grouped-payments)
-                     total-amount (reduce + (map :amount grouped-payments))]
-                 {:reference-date reference-date
-                  :is-installments false
-                  :number-installments 1
-                  :category-id category-id
-                  :is-fixed-expense (every? :is-fixed-expense grouped-payments)
-                  :amount total-amount})))
-       (sort-by :category-id)))
+(s/defn return-monthly-reference-payments :- [model.payment/monthly-reference-payment-schema]
+  [payments :- model.payment/payment-list-schema
+   categories :- model.category/category-list-schema]
+  (let [category-id->name (categories-by-id categories)]
+    (mapv (fn [payment]
+            {:category-name (get category-id->name (:category-id payment) "Unknown category")
+             :quantity-installments (:quantity-installments payment)
+             :number-installments (:number-installments payment)
+             :amount (:amount payment)})
+          payments)))

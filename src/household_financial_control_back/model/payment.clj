@@ -33,3 +33,9 @@
    :is-fixed-expense s/Bool
    :amount s/Num})
 
+(def monthly-reference-payment-schema
+  {:category-name s/Str
+   :quantity-installments (s/maybe s/Int)
+   :number-installments s/Int
+   :amount s/Num})
+
