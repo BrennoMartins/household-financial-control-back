@@ -39,13 +39,14 @@
     (is (= [payment-data]
            (logic.payment/generate-instalment-payment payment-data)))))
 
-(deftest return-monthly-reference-payments-enriches-payments-with-category-name
+(deftest return-monthly-reference-payments-groups-single-installments-by-category
   (let [payments [{:payment-date (java.time.LocalDate/parse "2026-06-05")
                    :reference-date (java.time.LocalDate/parse "2026-06-15")
                    :payment-method :credit-card
                    :card-id 1
                    :is-installments false
                    :number-installments 1
+                   :quantity-installments 1
                    :description "A"
                    :category-id 1
                    :is-fixed-expense true
@@ -57,6 +58,7 @@
                    :card-id 1
                    :is-installments false
                    :number-installments 1
+                   :quantity-installments 1
                    :description "B"
                    :category-id 1
                    :is-fixed-expense false
@@ -67,7 +69,8 @@
                    :payment-method :debit-card
                    :card-id 2
                    :is-installments false
-                   :number-installments 1
+                   :number-installments 3
+                   :quantity-installments 2
                    :description nil
                    :category-id 2
                    :is-fixed-expense true
@@ -76,16 +79,12 @@
         categories [{:id 1 :name "Alimentação"}
                     {:id 2 :name "Transporte"}]
         expected [{:category-name "Alimentação"
-                   :quantity-installments nil
+                   :quantity-installments 1
                    :number-installments 1
-                   :amount 100.00M}
-                  {:category-name "Alimentação"
-                   :quantity-installments nil
-                   :number-installments 1
-                   :amount 50.00M}
+                   :amount 150.00M}
                   {:category-name "Transporte"
-                   :quantity-installments nil
-                   :number-installments 1
+                   :quantity-installments 2
+                   :number-installments 3
                    :amount 75.00M}]]
     (is (= expected
            (logic.payment/return-monthly-reference-payments payments categories)))))

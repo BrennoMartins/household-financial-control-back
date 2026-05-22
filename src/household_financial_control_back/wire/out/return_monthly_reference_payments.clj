@@ -11,4 +11,8 @@
   {:payments [monthly-reference-payment-out-schema]})
 
 
-;;TODO backfill da planilha, testar api de relatorio, alterar no app api de relatorio
+;;TODO backfill da planilha de debito
+;;TODO sumariazar o que nao é parcelado
+;; Seria legal api do relatorio receber ou nao o oner
+;; colocar um valor total no front
+;; Revisar o que fizemos no logic do monthly
