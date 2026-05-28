@@ -13,6 +13,6 @@
 
 ;;TODO backfill da planilha de debito
 ;;TODO sumariazar o que nao é parcelado
-;; Seria legal api do relatorio receber ou nao o oner
+;; Seria legal api do relatorio receber ou nao o owner
 ;; colocar um valor total no front
 ;; Revisar o que fizemos no logic do monthly

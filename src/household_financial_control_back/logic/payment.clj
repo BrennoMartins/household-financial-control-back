@@ -21,34 +21,12 @@
                [(:id category) (:name category)]))
         categories))
 
-(defn- single-installment?
-  [payment]
-  (and (= 1 (:quantity-installments payment))
-       (= 1 (:number-installments payment))))
-
 (defn- ->monthly-reference-payment
   [payment category-id->name]
   {:category-name (get category-id->name (:category-id payment) "Unknown category")
    :quantity-installments (:quantity-installments payment)
    :number-installments (:number-installments payment)
    :amount (:amount payment)})
-
-(defn- aggregate-single-installment-payments
-  [payments category-id->name]
-  (:result
-   (reduce (fn [{:keys [indexes result] :as acc} payment]
-             (if (single-installment? payment)
-               (let [category-id (:category-id payment)
-                     position (get indexes category-id)
-                     payment-out (->monthly-reference-payment payment category-id->name)]
-                 (if (some? position)
-                   (update-in acc [:result position :amount] + (:amount payment))
-                   {:indexes (assoc indexes category-id (count result))
-                    :result (conj result payment-out)}))
-               (update acc :result conj (->monthly-reference-payment payment category-id->name))))
-           {:indexes {}
-            :result []}
-           payments)))
 
 (s/defn generate-instalment-payment :- model.payment/payment-list-schema
   [payment-data :- model.payment/payment-schema]
@@ -72,4 +50,4 @@
   [payments :- model.payment/payment-list-schema
    categories :- model.category/category-list-schema]
   (let [category-id->name (categories-by-id categories)]
-    (aggregate-single-installment-payments payments category-id->name)))
+    (mapv #(->monthly-reference-payment % category-id->name) payments)))
