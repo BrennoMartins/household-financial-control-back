@@ -108,45 +108,33 @@
            (adapter.payment/internal-payments->wire-return-all-payments payments)))))
 
 (deftest internal-monthly-payment->wire-payment-converts-types
-  (let [payment {:reference-date (java.time.LocalDate/parse "2026-05-01")
-                 :is-installments false
-                 :number-installments 1
-                 :category-id 1
-                 :is-fixed-expense true
+  (let [payment {:category-name "Alimentação"
+                 :quantity-installments 1
+                 :number-installments 3
                  :amount 250.00M}
-        expected {:reference-date "2026-05-01"
-                  :is-installments false
-                  :number-installments 1
-                  :category-id 1
-                  :is-fixed-expense true
+        expected {:category_name "Alimentação"
+                  :quantity_installments 1
+                  :number_installments 3
                   :amount 250.00M}]
     (is (= expected
            (adapter.payment/internal-monthly-payment->wire-payment payment)))))
 
 (deftest internal-monthly-payments->wire-return-monthly-reference-payments-converts-list
-  (let [payments [{:reference-date (java.time.LocalDate/parse "2026-05-01")
-                   :is-installments false
-                   :number-installments 1
-                   :category-id 1
-                   :is-fixed-expense true
+  (let [payments [{:category-name "Alimentação"
+                   :quantity-installments 1
+                   :number-installments 3
                    :amount 250.00M}
-                  {:reference-date (java.time.LocalDate/parse "2026-05-01")
-                   :is-installments false
+                  {:category-name "Transporte"
+                   :quantity-installments nil
                    :number-installments 1
-                   :category-id 2
-                   :is-fixed-expense false
                    :amount 99.90M}]
-        expected {:payments [{:reference-date "2026-05-01"
-                              :is-installments false
-                              :number-installments 1
-                              :category-id 1
-                              :is-fixed-expense true
+        expected {:payments [{:category_name "Alimentação"
+                              :quantity_installments 1
+                              :number_installments 3
                               :amount 250.00M}
-                             {:reference-date "2026-05-01"
-                              :is-installments false
-                              :number-installments 1
-                              :category-id 2
-                              :is-fixed-expense false
+                             {:category_name "Transporte"
+                              :quantity_installments nil
+                              :number_installments 1
                               :amount 99.90M}]}]
     (is (= expected
            (adapter.payment/internal-monthly-payments->wire-return-monthly-reference-payments payments)))))
