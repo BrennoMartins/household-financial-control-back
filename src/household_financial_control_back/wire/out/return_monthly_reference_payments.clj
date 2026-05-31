@@ -11,8 +11,7 @@
   {:payments [monthly-reference-payment-out-schema]})
 
 
-;;TODO backfill da planilha de debito
-;;TODO sumariazar o que nao é parcelado
-;; Seria legal api do relatorio receber ou nao o owner
-;; colocar um valor total no front
-;; Revisar o que fizemos no logic do monthly
+;; TODO Editar as contas
+;; TODO Pensar melhor como listar as contas
+;; TODO Só os parcelados do mes e quantas parcelas faltam
+;;TODO Revisar o que fizemos na logica para retornar o objeto

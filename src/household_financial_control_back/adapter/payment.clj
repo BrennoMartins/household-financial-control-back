@@ -61,19 +61,25 @@
    :quantity-installments (:quantity-installments payload)})
 
 (s/defn internal-payment->wire-payment :- wire.out.return-all-payments/payment-out-schema
-  [payment :- model.payment/payment-schema]
-  {:id (:id payment)
-   :payment-date (->wire-date (:payment-date payment))
-   :reference-date (->wire-date (:reference-date payment))
-   :payment-method (->payment-method-string (:payment-method payment))
-   :card-id (:card-id payment)
-   :is-installments (:is-installments payment)
-   :number-installments (:number-installments payment)
-   :description (:description payment)
-   :category-id (:category-id payment)
-   :is-fixed-expense (:is-fixed-expense payment)
-   :amount (:amount payment)
-   :owner-id (:owner-id payment)})
+   [payment :- model.payment/payment-schema]
+   {:id (:id payment)
+    :payment-date (->wire-date (:payment-date payment))
+    :reference-date (->wire-date (:reference-date payment))
+    :payment-method (->payment-method-string (:payment-method payment))
+    :card (when-let [card (:card payment)]
+            {:id (:id card)
+             :name (:name card)})
+    :is-installments (:is-installments payment)
+    :number-installments (:number-installments payment)
+    :description (:description payment)
+    :category (when-let [category (:category payment)]
+                {:id (:id category)
+                 :name (:name category)})
+    :is-fixed-expense (:is-fixed-expense payment)
+    :amount (:amount payment)
+    :owner (when-let [owner (:owner payment)]
+             {:id (:id owner)
+              :name (:name owner)})})
 
 (s/defn internal-payments->wire-return-all-payments :- wire.out.return-all-payments/return-all-payments-schema
   [payments :- model.payment/payment-list-schema]
