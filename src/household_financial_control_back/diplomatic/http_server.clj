@@ -79,11 +79,11 @@
                    valid? (s/check wire.in.create-new-payment/create-new-payment-schema body)]
                (if valid?
                  {:status 400 :body {:erro "Invalid data" :detalhes valid?}}
-                 (let [created-payment (controller.payment/create-new-payment
+                 (let [created-payments (controller.payment/create-new-payment
                                          diplomatic.db.household-financial-db/db
                                          (adapter.payment/wire-create-new-payment->internal-payment body))]
                    {:status 201 :body {:mensagem "Payment created successfully"
-                                       :payment (adapter.payment/internal-payment->wire-payment created-payment)}}))))
+                                       :payments (mapv adapter.payment/internal-payment->wire-payment created-payments)}}))))
 
            (GET "/payment" []
              (let [payments (controller.payment/return-all-payments diplomatic.db.household-financial-db/db)

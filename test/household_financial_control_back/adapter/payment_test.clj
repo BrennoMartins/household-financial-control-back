@@ -34,25 +34,28 @@
                  :reference-date (java.time.LocalDate/parse "2026-05-01")
                  :payment-method :credit-card
                  :card-id 1
+                 :card {:id 1 :name "Nubank"}
                  :is-installments true
                  :number-installments 3
                  :description "Compra do mês"
                  :category-id 1
+                 :category {:id 1 :name "Alimentação"}
                  :is-fixed-expense false
                  :amount 199.90M
-                 :owner-id 1}
+                 :owner-id 1
+                 :owner {:id 1 :name "Brenno"}}
         expected {:id 1
                   :payment-date "2026-05-10"
                   :reference-date "2026-05-01"
                   :payment-method "credit-card"
-                  :card-id 1
+                  :card {:id 1 :name "Nubank"}
                   :is-installments true
                   :number-installments 3
                   :description "Compra do mês"
-                  :category-id 1
+                  :category {:id 1 :name "Alimentação"}
                   :is-fixed-expense false
                   :amount 199.90M
-                  :owner-id 1}]
+                  :owner {:id 1 :name "Brenno"}}]
     (is (= expected
            (adapter.payment/internal-payment->wire-payment payment)))))
 (deftest internal-payments->wire-return-all-payments-converts-list
@@ -61,49 +64,55 @@
                    :reference-date (java.time.LocalDate/parse "2026-05-01")
                    :payment-method :credit-card
                    :card-id 1
+                   :card {:id 1 :name "Nubank"}
                    :is-installments true
                    :number-installments 3
                    :description "Compra do mês"
                    :category-id 1
+                   :category {:id 1 :name "Alimentação"}
                    :is-fixed-expense false
                    :amount 199.90M
-                   :owner-id 1}
+                   :owner-id 1
+                   :owner {:id 1 :name "Brenno"}}
                   {:id 2
                    :payment-date (java.sql.Date/valueOf "2026-06-10")
                    :reference-date (java.time.LocalDate/parse "2026-06-01")
                    :payment-method :debit-card
                    :card-id 2
+                   :card {:id 2 :name "Inter"}
                    :is-installments false
                    :number-installments 1
                    :description nil
                    :category-id 2
+                   :category {:id 2 :name "Transporte"}
                    :is-fixed-expense true
                    :amount 75.00M
-                   :owner-id 2}]
+                   :owner-id 2
+                   :owner {:id 2 :name "Maria"}}]
         expected {:payments [{:id 1
                               :payment-date "2026-05-10"
                               :reference-date "2026-05-01"
                               :payment-method "credit-card"
-                              :card-id 1
+                              :card {:id 1 :name "Nubank"}
                               :is-installments true
                               :number-installments 3
                               :description "Compra do mês"
-                              :category-id 1
+                              :category {:id 1 :name "Alimentação"}
                               :is-fixed-expense false
                               :amount 199.90M
-                              :owner-id 1}
+                              :owner {:id 1 :name "Brenno"}}
                              {:id 2
                               :payment-date "2026-06-10"
                               :reference-date "2026-06-01"
                               :payment-method "debit-card"
-                              :card-id 2
+                              :card {:id 2 :name "Inter"}
                               :is-installments false
                               :number-installments 1
                               :description nil
-                              :category-id 2
+                              :category {:id 2 :name "Transporte"}
                               :is-fixed-expense true
                               :amount 75.00M
-                              :owner-id 2}]}]
+                              :owner {:id 2 :name "Maria"}}]}]
     (is (= expected
            (adapter.payment/internal-payments->wire-return-all-payments payments)))))
 
