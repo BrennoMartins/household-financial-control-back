@@ -11,5 +11,7 @@
   {:payments [monthly-reference-payment-out-schema]})
 
 
-;;TODO Seria legal api do get payment receber o owner
+;; TODO Editar as contas
+;; TODO Pensar melhor como listar as contas
+;; TODO Só os parcelados do mes e quantas parcelas faltam
 ;;TODO Revisar o que fizemos na logica para retornar o objeto
