@@ -71,6 +71,7 @@
              :name (:name card)})
     :is-installments (:is-installments payment)
     :number-installments (:number-installments payment)
+    :quantity_installments (:quantity-installments payment)
     :description (:description payment)
     :category (when-let [category (:category payment)]
                 {:id (:id category)

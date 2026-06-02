@@ -21,6 +21,7 @@
     (s/optional-key :card) (s/maybe card-object-schema)
     :is-installments s/Bool
     :number-installments s/Int
+    (s/optional-key :quantity_installments) (s/maybe s/Int)
     (s/optional-key :description) (s/maybe s/Str)
     (s/optional-key :category) (s/maybe category-object-schema)
     :is-fixed-expense s/Bool

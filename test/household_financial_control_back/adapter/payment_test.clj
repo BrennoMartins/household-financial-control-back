@@ -37,6 +37,7 @@
                  :card {:id 1 :name "Nubank"}
                  :is-installments true
                  :number-installments 3
+                 :quantity-installments 1
                  :description "Compra do mês"
                  :category-id 1
                  :category {:id 1 :name "Alimentação"}
@@ -51,6 +52,7 @@
                   :card {:id 1 :name "Nubank"}
                   :is-installments true
                   :number-installments 3
+                   :quantity_installments 1
                   :description "Compra do mês"
                   :category {:id 1 :name "Alimentação"}
                   :is-fixed-expense false
@@ -67,6 +69,7 @@
                    :card {:id 1 :name "Nubank"}
                    :is-installments true
                    :number-installments 3
+                   :quantity-installments 1
                    :description "Compra do mês"
                    :category-id 1
                    :category {:id 1 :name "Alimentação"}
@@ -82,6 +85,7 @@
                    :card {:id 2 :name "Inter"}
                    :is-installments false
                    :number-installments 1
+                   :quantity-installments nil
                    :description nil
                    :category-id 2
                    :category {:id 2 :name "Transporte"}
@@ -96,6 +100,7 @@
                               :card {:id 1 :name "Nubank"}
                               :is-installments true
                               :number-installments 3
+                              :quantity_installments 1
                               :description "Compra do mês"
                               :category {:id 1 :name "Alimentação"}
                               :is-fixed-expense false
@@ -108,6 +113,7 @@
                               :card {:id 2 :name "Inter"}
                               :is-installments false
                               :number-installments 1
+                              :quantity_installments nil
                               :description nil
                               :category {:id 2 :name "Transporte"}
                               :is-fixed-expense true
