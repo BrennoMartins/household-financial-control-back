@@ -51,3 +51,18 @@
   (let [monthly-payments (diplomatic.db.payment/return-payments-by-year-month db year month)
         categories (diplomatic.db.category/return-all-categories db)]
     (logic.payment/return-monthly-reference-payments monthly-payments categories)))
+
+(s/defn update-payment :- model.payment/payment-schema
+  [db payment-id :- s/Int payment-data :- model.payment/payment-schema]
+  (let [updated-payment (diplomatic.db.payment/update-payment db payment-id payment-data)
+        cards (diplomatic.db.card/return-all-cards db)
+        categories (diplomatic.db.category/return-all-categories db)
+        owners (diplomatic.db.owner/return-all-owners db)
+        card-map (map-by-id cards)
+        category-map (map-by-id categories)
+        owner-map (map-by-id owners)]
+    (when updated-payment
+      (-> updated-payment
+          (assoc :card (get card-map (:card-id updated-payment)))
+          (assoc :category (get category-map (:category-id updated-payment)))
+          (assoc :owner (get owner-map (:owner-id updated-payment)))))))

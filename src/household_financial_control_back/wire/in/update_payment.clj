@@ -1,0 +1,25 @@
+(ns household-financial-control-back.wire.in.update-payment
+  (:require [schema.core :as s]))
+
+(def iso-date-string
+  (s/pred #(try
+             (java.time.LocalDate/parse %)
+             true
+             (catch Exception _
+               false))
+          'iso-date-string))
+
+(s/defschema update-payment-schema
+  {:payment-date iso-date-string
+   :reference-date iso-date-string
+   :payment-method (s/enum "debit-card" "credit-card")
+   :card-id s/Int
+   :is-installments s/Bool
+   :number-installments s/Int
+   (s/optional-key :description) (s/maybe s/Str)
+   (s/optional-key :quantity-installments) (s/maybe s/Int)
+   :category-id s/Int
+   :is-fixed-expense s/Bool
+   :amount s/Num
+   :owner-id s/Int})
+
