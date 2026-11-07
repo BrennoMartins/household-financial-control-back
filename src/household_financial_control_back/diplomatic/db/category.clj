@@ -21,6 +21,6 @@
   (let [datasource (jdbc/get-datasource db)
         query-sql (-> (h/select :id :name)
                       (h/from :categories)
-                      (h/order-by [:id :asc])
+                      (h/order-by [:name :asc])
                       (sql/format))]
     (jdbc/execute! datasource query-sql {:builder-fn rs/as-unqualified-lower-maps})))
