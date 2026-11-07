@@ -8,6 +8,7 @@
             [household-financial-control-back.wire.in.create-new-category :as wire.in.create-new-category]
             [household-financial-control-back.wire.in.create-new-owner :as wire.in.create-new-owner]
             [household-financial-control-back.wire.in.create-new-payment :as wire.in.create-new-payment]
+            [household-financial-control-back.wire.in.update-payment :as wire.in.update-payment]
             [household-financial-control-back.diplomatic.db.household-financial-db :as diplomatic.db.household-financial-db]
             [household-financial-control-back.controller.card :as controller.card]
             [household-financial-control-back.controller.category :as controller.category]
@@ -89,6 +90,25 @@
              (let [payments (controller.payment/return-all-payments diplomatic.db.household-financial-db/db)
                    response (adapter.payment/internal-payments->wire-return-all-payments payments)]
                {:status 200 :body response}))
+
+           (PUT "/payment/:id" [id :as req]
+             (let [payment-id (parse-int-safe id)
+                   body   (:body req)
+                   valid? (s/check wire.in.update-payment/update-payment-schema body)]
+               (cond
+                 (nil? payment-id)
+                 {:status 400 :body {:erro "Invalid payment ID" :detalhes {:id id}}}
+                 valid?
+                 {:status 400 :body {:erro "Invalid data" :detalhes valid?}}
+                 :else
+                 (let [updated-payment (controller.payment/update-payment
+                                        diplomatic.db.household-financial-db/db
+                                        payment-id
+                                        (adapter.payment/wire-update-payment->internal-payment body))]
+                   (if updated-payment
+                     {:status 200 :body {:mensagem "Payment updated successfully"
+                                         :payment (adapter.payment/internal-payment->wire-payment updated-payment)}}
+                     {:status 404 :body {:erro "Payment not found" :detalhes {:id payment-id}}})))))
 
            (GET "/payment/monthly-reference" [year month]
              (let [year-int (parse-int-safe year)

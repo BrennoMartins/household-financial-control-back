@@ -35,7 +35,8 @@
     :is-fixed-expense s/Bool
     :amount s/Num
     :owner-id s/Int
-    (s/optional-key :owner) (s/maybe owner-object-schema)})
+    (s/optional-key :owner) (s/maybe owner-object-schema)
+    :quantity-installments s/Int})
 
 (def payment-list-schema
   [payment-schema])

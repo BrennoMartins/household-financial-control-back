@@ -72,3 +72,28 @@
     (mapv ->payment-row
           (jdbc/execute! datasource query-sql {:builder-fn rs/as-maps}))))
 
+(s/defn update-payment :- model.payment/payment-schema
+  [db payment-id :- s/Int payment-data :- model.payment/payment-schema]
+  (let [datasource (jdbc/get-datasource db)
+        update-sql (-> (h/update :payments)
+                       (h/set {:payment_date (:payment-date payment-data)
+                               :reference_date (:reference-date payment-data)
+                               :payment_method (name (:payment-method payment-data))
+                               :card_id (:card-id payment-data)
+                               :is_installments (:is-installments payment-data)
+                               :number_installments (:number-installments payment-data)
+                               :description (:description payment-data)
+                               :category_id (:category-id payment-data)
+                               :is_fixed_expense (:is-fixed-expense payment-data)
+                               :amount (:amount payment-data)
+                               :owner_id (:owner-id payment-data)
+                               :quantity_installments (:quantity-installments payment-data)})
+                       (h/where [:= :id payment-id])
+                       (h/returning :id :payment_date :reference_date :payment_method :card_id :is_installments
+                                    :number_installments :description :category_id :is_fixed_expense :amount :owner_id :quantity_installments)
+                       (sql/format))]
+    (let [result (first (jdbc/execute! datasource update-sql {:builder-fn rs/as-maps}))]
+      (when result
+        (-> result
+            snake-to-kebab
+            (update :payment-method keyword))))))

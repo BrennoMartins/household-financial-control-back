@@ -10,8 +10,8 @@
 (s/defschema return-monthly-reference-payments-schema
   {:payments [monthly-reference-payment-out-schema]})
 
-
-;; TODO Editar as contas
+;; TODO colocar uma tabela no dashboard
+;; TODO TEstar a API PUt de edit Editar as contas
 ;; TODO Pensar melhor como listar as contas
 ;; TODO Só os parcelados do mes e quantas parcelas faltam
 ;;TODO Revisar o que fizemos na logica para retornar o objeto
