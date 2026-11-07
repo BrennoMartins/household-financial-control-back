@@ -12,7 +12,7 @@ Atualiza um pagamento existente com todos os campos fornecidos no body.
 - `id` (required) - ID do pagamento a ser atualizado (número inteiro)
 
 ### Body (JSON)
-Todos os campos são obrigatórios:
+Todos os campos, exceto `description` e `quantity-installments`, são obrigatórios:
 
 ```json
 {
@@ -46,7 +46,7 @@ Todos os campos são obrigatórios:
 | is-fixed-expense | Boolean | Se é despesa fixa |
 | amount | Número | Valor do pagamento |
 | owner-id | Integer | ID do proprietário |
-| quantity-installments | Integer (opcional) | Quantidade de parcelas restantes |
+| quantity-installments | Integer ou null (opcional) | Número da parcela atual |
 
 ## Respostas
 
@@ -177,8 +177,8 @@ curl -X PUT http://localhost:3000/payment/2 \
 
 - O endpoint valida o ID na URL (deve ser um inteiro válido)
 - O endpoint valida todos os campos do body
+- Campos opcionais omitidos são gravados como `null`; o PUT atualiza somente o pagamento identificado.
 - Se o pagamento não for encontrado, retorna 404
 - A resposta inclui os dados enriquecidos (card, category, owner) com id e name
 - Datas devem estar em formato ISO (YYYY-MM-DD)
 - payment-method aceita apenas "debit-card" ou "credit-card"
-
